@@ -111,34 +111,47 @@
  <script>
 let currentAudio = null;
     let currentButton = null;
+function playAudio(id, button) {
+    const audio = document.getElementById(id);
 
-    function playAudio(id, button) {
-        const audio = document.getElementById(id);
+    // Если есть текущий аудиофайл и это не тот же аудиофайл, который мы хотим воспроизвести
+    if (currentAudio && currentAudio !== audio) {
+        currentAudio.pause();
+        currentButton.textContent = '▶️ Play'; // Сбрасываем текст предыдущей кнопки
+    }
 
-        // Если есть текущий аудиофайл и это не тот же аудиофайл, который мы хотим воспроизвести
-        if (currentAudio && currentAudio !== audio) {
-            currentAudio.pause();
-            currentButton.textContent = '▶️ Play'; // Сбрасываем текст предыдущей кнопки
-        }
+    // Проверяем состояние загрузки аудио
+    if (audio.readyState < 3) { // Если файл ещё не готов
+        console.error("Аудиофайл ещё не загружен:", id);
+        return;
+    }
 
-        // Проверяем состояние аудио
-        if (audio.paused) {
-            audio.play();
+    // Проверяем состояние воспроизведения
+    if (audio.paused) {
+        audio.play().then(() => {
             button.textContent = '⏸️ Pause'; // Меняем текст кнопки на "Пауза"
             currentAudio = audio; // Устанавливаем текущее аудио
             currentButton = button; // Устанавливаем текущую кнопку
-        } else {
-            audio.pause();
-            button.textContent = '▶️ Play'; // Меняем текст кнопки на "Играть"
-        }
-
-        // Когда аудио заканчивается, сбрасываем текст кнопки
-        audio.onended = function() {
-            button.textContent = '▶️ Play'; // Сбрасываем текст кнопки после окончания воспроизведения
-            currentAudio = null; // Сбрасываем текущее аудио
-            currentButton = null; // Сбрасываем текущую кнопку
-        };
+        }).catch(error => {
+            console.error("Ошибка воспроизведения:", error);
+        });
+    } else {
+        audio.pause();
+        button.textContent = '▶️ Play'; // Меняем текст кнопки на "Играть"
     }
+
+    // Когда аудио заканчивается, сбрасываем текст кнопки
+    audio.onended = function () {
+        button.textContent = '▶️ Play'; // Сбрасываем текст кнопки после окончания воспроизведения
+        currentAudio = null; // Сбрасываем текущее аудио
+        currentButton = null; // Сбрасываем текущую кнопку
+    };
+
+    audio.onerror = function () {
+        console.error(`Ошибка загрузки аудиофайла с id ${id}`);
+    };
+}
+
   </script>
 </head>
 <body>
